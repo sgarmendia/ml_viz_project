@@ -1,2 +1,2 @@
-# ml_viz_project
+# Data Visualization Project
 First project for BDML course
