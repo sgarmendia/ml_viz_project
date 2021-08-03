@@ -1,36 +1,44 @@
 from flask import Flask, request, jsonify, Response
 from pymongo import MongoClient
-from bson import json_util
+from bson import json_util, ObjectId
 
 url=f"mongodb+srv://sg-user:{'<password>'}@cluster0.vulo8.mongodb.net/?retryWrites=true&w=majority"
 
 cluster = MongoClient(url)
 db = cluster['sample_mflix']
-movies = db['movies']
+movies = db['movies_short']
 
 app = Flask(__name__)
 
 
 @app.route("/", methods=['GET'])
 def get_data():
-    data = movies.find({},{ "title", "year" }).limit(10)
+    data = movies.find({}).limit(10)
     response = json_util.dumps(data)
 
     return Response(response, mimetype="application/json")
 
-@app.route("/<id>", methods=['GET'])
-def get_param(id):
-    return f"Id is --> {id}"
+@app.route("/delete/<id>", methods=['GET'])
+def delete(id):
+    try:
+        deleted = movies.delete_one({ '_id': ObjectId(id) })
+
+        return f"{deleted.acknowledged}, {deleted.deleted_count}"
+    except Exception as e:
+        return jsonify({ 'error': str(e)}), 400
 
 @app.route("/create", methods=['POST', 'PUT'])
 def create():
-    data = request.json
-    user = data['username']
-    password = data['password']
+    try:
+        data = request.json
+        name = data['name']
+        year = data['year']
 
-    # save to mongo new user
+        created = movies.insert_one({ "name":name, "year":year })
 
-    return f"New user {user} has been created"
+        return str(created.inserted_id)
+    except Exception as e:
+        return jsonify({ 'error': str(e)}), 400
 
 @app.route("/args", methods=['GET'])
 def get_args():
