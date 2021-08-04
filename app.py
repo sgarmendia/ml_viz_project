@@ -1,24 +1,33 @@
 from flask import Flask, request, jsonify, Response
+import os
+from dotenv import load_dotenv
 from pymongo import MongoClient
 from bson import json_util, ObjectId
 
-url=f"mongodb+srv://sg-user:{'<password>'}@cluster0.vulo8.mongodb.net/?retryWrites=true&w=majority"
+load_dotenv()
 
-cluster = MongoClient(url)
+PORT=os.getenv('PORT') or 8000
+
+ATLAS_USER=os.getenv('ATLAS_USER')
+ATLAS_PASS=os.getenv('ATLAS_PASS')
+
+mongo_url=f"mongodb+srv://{ATLAS_USER}:{ATLAS_PASS}@cluster0.vulo8.mongodb.net/?retryWrites=true&w=majority"
+
+cluster = MongoClient(mongo_url)
 db = cluster['sample_mflix']
 movies = db['movies_short']
 
 app = Flask(__name__)
 
-
 @app.route("/", methods=['GET'])
 def get_data():
+    print('get')
     data = movies.find({}).limit(10)
     response = json_util.dumps(data)
 
     return Response(response, mimetype="application/json")
 
-@app.route("/delete/<id>", methods=['GET'])
+@app.route("/delete/<id>", methods=['DELETE'])
 def delete(id):
     try:
         deleted = movies.delete_one({ '_id': ObjectId(id) })
@@ -27,7 +36,7 @@ def delete(id):
     except Exception as e:
         return jsonify({ 'error': str(e)}), 400
 
-@app.route("/create", methods=['POST', 'PUT'])
+@app.route("/create", methods=['POST'])
 def create():
     try:
         data = request.json
@@ -53,4 +62,4 @@ def page_not_found(error=None):
     return response
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    app.run(debug=True, port=PORT, host='0.0.0.0')
