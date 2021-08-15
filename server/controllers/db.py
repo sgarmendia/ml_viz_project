@@ -1,11 +1,6 @@
-import os
-from dotenv import load_dotenv
 from pymongo import MongoClient
+from config import MONGO_URL
 from bson import json_util
-
-load_dotenv()
-
-MONGO_URL=os.getenv('MONGO_URL')
 
 cluster = MongoClient(MONGO_URL)
 db = cluster['bdml_project_1']
