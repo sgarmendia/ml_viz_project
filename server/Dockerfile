@@ -12,4 +12,4 @@ ADD . .
 RUN  pip install -r requirements.txt
 
 # Entry command
-CMD ["python","app.py"]
+CMD ["python","main.py"]
