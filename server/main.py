@@ -1,4 +1,4 @@
- from app import app
+from app import app
 from config import PORT, DEV
 
 import routes.root_routes
